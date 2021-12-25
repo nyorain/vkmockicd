@@ -30,7 +30,7 @@
  ****************************************************************************/
 
 #pragma once
-#include <vulkan/vulkan.h>
+#include "./vulkan/vulkan.h"
 
 // These empty generic templates are specialized for each type with sType
 // members and for each sType -- providing a two way map between structure

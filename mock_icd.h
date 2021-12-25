@@ -26,7 +26,7 @@
 #include <mutex>
 #include <string>
 #include <cstring>
-#include "vulkan/vk_icd.h"
+#include "./vulkan/vk_icd.h"
 namespace vkmock {
 
 
