@@ -22,11 +22,12 @@
 **
 */
 
+#define VK_NO_PROTOTYPES
 #include <unordered_map>
 #include <mutex>
 #include <string>
 #include <cstring>
-#include "./vulkan/vk_icd.h"
+#include "vulkan/vk_icd.h"
 namespace vkmock {
 
 
@@ -84,6 +85,7 @@ static const std::unordered_map<std::string, uint32_t> instance_extension_map = 
     {"VK_EXT_acquire_drm_display", 1},
     {"VK_EXT_directfb_surface", 1},
     {"VK_QNX_screen_surface", 1},
+    {"VK_GOOGLE_surfaceless_query", 1},
 };
 // Map of device extension name to version
 static const std::unordered_map<std::string, uint32_t> device_extension_map = {
@@ -108,8 +110,8 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_AMD_negative_viewport_height", 1},
     {"VK_AMD_gpu_shader_half_float", 2},
     {"VK_AMD_shader_ballot", 1},
-    {"VK_EXT_video_encode_h264", 2},
-    {"VK_EXT_video_encode_h265", 2},
+    {"VK_EXT_video_encode_h264", 3},
+    {"VK_EXT_video_encode_h265", 3},
     {"VK_EXT_video_decode_h264", 3},
     {"VK_AMD_texture_gather_bias_lod", 1},
     {"VK_AMD_shader_info", 1},
@@ -319,6 +321,8 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_EXT_border_color_swizzle", 1},
     {"VK_EXT_pageable_device_local_memory", 1},
     {"VK_KHR_maintenance4", 2},
+    {"VK_QCOM_fragment_density_map_offset", 1},
+    {"VK_NV_linear_color_attachment", 1},
 };
 
 
@@ -3316,6 +3320,9 @@ static VKAPI_ATTR void VKAPI_CALL SetDeviceMemoryPriorityEXT(
     VkDevice                                    device,
     VkDeviceMemory                              memory,
     float                                       priority);
+
+
+
 
 
 static VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureKHR(

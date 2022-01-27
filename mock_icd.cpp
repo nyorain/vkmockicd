@@ -5617,6 +5617,8 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetPhysicalDeviceProcAddr(VkInst
 #define EXPORT __attribute__((visibility("default")))
 #elif defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590)
 #define EXPORT __attribute__((visibility("default")))
+#elif defined(_WIN32)
+#define EXPORT __declspec(dllexport)
 #else
 #define EXPORT
 #endif

@@ -219,6 +219,8 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL GetPhysicalDeviceProcAddr(VkInst
 #define EXPORT __attribute__((visibility("default")))
 #elif defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590)
 #define EXPORT __attribute__((visibility("default")))
+#elif defined(_WIN32)
+#define EXPORT __declspec(dllexport)
 #else
 #define EXPORT
 #endif
@@ -1230,6 +1232,9 @@ class MockICDOutputGenerator(OutputGenerator):
             for s in genOpts.prefixText:
                 write(s, file=self.outFile)
         if self.header:
+            # we don't want prototypes to avoid linking issues.
+            # also important on windows to allow us setting correct dllexport linkage
+            write('#define VK_NO_PROTOTYPES', file=self.outFile)
             write('#include <unordered_map>', file=self.outFile)
             write('#include <mutex>', file=self.outFile)
             write('#include <string>', file=self.outFile)

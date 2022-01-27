@@ -64,15 +64,13 @@ gen = MockICDOutputGenerator(errFile=errWarn, warnFile=errWarn, diagFile=diag)
 
 reg = Registry(gen, opts)
 reg.loadElementTree(tree)
-# reg.validateGroups()
 reg.apiGen()
 
 # generate header
-# opts.filename = 'mock_icd.h'
-# opts.helper_file_type = 'mock_icd_header'
-# gen = MockICDOutputGenerator(errFile=errWarn, warnFile=errWarn, diagFile=diag)
+opts.filename = 'mock_icd.h'
+opts.helper_file_type = 'mock_icd_header'
+gen = MockICDOutputGenerator(errFile=errWarn, warnFile=errWarn, diagFile=diag)
 # 
-# reg = Registry(gen, opts)
-# reg.loadElementTree(tree)
-# # reg.validateGroups()
-# reg.apiGen()
+reg = Registry(gen, opts)
+reg.loadElementTree(tree)
+reg.apiGen()
