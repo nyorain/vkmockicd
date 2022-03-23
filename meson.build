@@ -17,7 +17,7 @@ lib = shared_library('VkICD_mock_icd', src)
 conf_data = configuration_data()
 
 if build_machine.system() == 'windows'
-	conf_data.set('libpath', '.\\VkICD_mock_icd.dll')
+	conf_data.set('libpath', '.\\\\VkICD_mock_icd.dll')
 else
 	conf_data.set('libpath', './libVkICD_mock_icd.so')
 endif
