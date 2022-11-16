@@ -31,7 +31,7 @@ namespace vkmock {
 using std::unordered_map;
 
 static constexpr uint32_t icd_physical_device_count = 1;
-static constexpr uint32_t kSupportedVulkanAPIVersion = VK_API_VERSION_1_1;
+static constexpr uint32_t kSupportedVulkanAPIVersion = VK_API_VERSION_1_2;
 static unordered_map<VkInstance, std::array<VkPhysicalDevice, icd_physical_device_count>> physical_device_map;
 
 // Map device memory handle to any mapped allocations that we'll need to free on unmap
@@ -55,7 +55,7 @@ static VkPhysicalDeviceLimits SetLimits(VkPhysicalDeviceLimits *limits) {
     limits->maxImageDimension3D = 256;
     limits->maxImageDimensionCube = 4096;
     limits->maxImageArrayLayers = 256;
-    limits->maxTexelBufferElements = 65536;
+    limits->maxTexelBufferElements = 134217728; // TODO: edited for vil
     limits->maxUniformBufferRange = 16384;
     limits->maxStorageBufferRange = 134217728;
     limits->maxPushConstantsSize = 128;
@@ -314,7 +314,7 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceQueueFamilyProperties(
     } else {
         if (*pQueueFamilyPropertyCount) {
             pQueueFamilyProperties[0].queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT | VK_QUEUE_SPARSE_BINDING_BIT;
-            pQueueFamilyProperties[0].queueCount = 1;
+            pQueueFamilyProperties[0].queueCount = 2;
             pQueueFamilyProperties[0].timestampValidBits = 0;
             pQueueFamilyProperties[0].minImageTransferGranularity = {1,1,1};
         }
@@ -1276,7 +1276,7 @@ static VKAPI_ATTR void VKAPI_CALL FreeCommandBuffers(
                 cbs.erase(it);
             }
         }
-            
+
         DestroyDispObjHandle((void*) pCommandBuffers[i]);
     }
 }
@@ -2670,6 +2670,29 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFeatures2KHR(
         feat_bools = (VkBool32*)&blendop_features->advancedBlendCoherentOperations;
         SetBoolArrayTrue(feat_bools, num_bools);
     }
+    const auto *vulkan11_features = lvl_find_in_chain<VkPhysicalDeviceVulkan11Features>(pFeatures->pNext);
+    if (vulkan11_features) {
+        const auto bool_size = sizeof(VkPhysicalDeviceVulkan11Features) - offsetof(VkPhysicalDeviceVulkan11Features, storageBuffer16BitAccess);
+        num_bools = bool_size/sizeof(VkBool32);
+        feat_bools = (VkBool32*)&vulkan11_features->storageBuffer16BitAccess;
+        SetBoolArrayTrue(feat_bools, num_bools);
+    }
+    const auto *vulkan12_features = lvl_find_in_chain<VkPhysicalDeviceVulkan12Features>(pFeatures->pNext);
+    if (vulkan12_features) {
+        const auto bool_size = sizeof(VkPhysicalDeviceVulkan12Features) - offsetof(VkPhysicalDeviceVulkan12Features, samplerMirrorClampToEdge);
+        num_bools = bool_size/sizeof(VkBool32);
+        feat_bools = (VkBool32*)&vulkan12_features->samplerMirrorClampToEdge;
+        SetBoolArrayTrue(feat_bools, num_bools);
+    }
+	const auto *ts_features = lvl_find_in_chain<VkPhysicalDeviceTimelineSemaphoreFeatures>(pFeatures->pNext);
+    if (ts_features) {
+		*((VkBool32*) &ts_features->timelineSemaphore) = VK_TRUE;
+    }
+	const auto *xfb_features = lvl_find_in_chain<VkPhysicalDeviceTransformFeedbackFeaturesEXT>(pFeatures->pNext);
+    if (xfb_features) {
+		*((VkBool32*) &xfb_features->transformFeedback) = VK_TRUE;
+		*((VkBool32*) &xfb_features->geometryStreams) = VK_TRUE;
+    }
 }
 
 static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2KHR(
@@ -2704,6 +2727,48 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2KHR(
         write_props->maxDescriptorSetUpdateAfterBindStorageImages = 500000;
         write_props->maxDescriptorSetUpdateAfterBindInputAttachments = 500000;
     }
+
+    const auto *vulkan_11_props = lvl_find_in_chain<VkPhysicalDeviceVulkan11Properties>(pProperties->pNext);
+	if (vulkan_11_props) {
+        VkPhysicalDeviceVulkan11Properties* write_props = (VkPhysicalDeviceVulkan11Properties*)vulkan_11_props;
+		// TODO
+		write_props->maxMemoryAllocationSize = 1 * 1024 * 1024 * 1024;
+	}
+
+    const auto *vulkan_12_props = lvl_find_in_chain<VkPhysicalDeviceVulkan12Properties>(pProperties->pNext);
+	if (vulkan_12_props) {
+        VkPhysicalDeviceVulkan12Properties* write_props = (VkPhysicalDeviceVulkan12Properties*)vulkan_12_props;
+        write_props->maxUpdateAfterBindDescriptorsInAllPools = 500000;
+        write_props->shaderUniformBufferArrayNonUniformIndexingNative = false;
+        write_props->shaderSampledImageArrayNonUniformIndexingNative = false;
+        write_props->shaderStorageBufferArrayNonUniformIndexingNative = false;
+        write_props->shaderStorageImageArrayNonUniformIndexingNative = false;
+        write_props->shaderInputAttachmentArrayNonUniformIndexingNative = false;
+        write_props->robustBufferAccessUpdateAfterBind = true;
+        write_props->quadDivergentImplicitLod = true;
+        write_props->maxPerStageDescriptorUpdateAfterBindSamplers = 500000;
+        write_props->maxPerStageDescriptorUpdateAfterBindUniformBuffers = 500000;
+        write_props->maxPerStageDescriptorUpdateAfterBindStorageBuffers = 500000;
+        write_props->maxPerStageDescriptorUpdateAfterBindSampledImages = 500000;
+        write_props->maxPerStageDescriptorUpdateAfterBindStorageImages = 500000;
+        write_props->maxPerStageDescriptorUpdateAfterBindInputAttachments = 500000;
+        write_props->maxPerStageUpdateAfterBindResources = 500000;
+        write_props->maxDescriptorSetUpdateAfterBindSamplers = 500000;
+        write_props->maxDescriptorSetUpdateAfterBindUniformBuffers = 96;
+        write_props->maxDescriptorSetUpdateAfterBindUniformBuffersDynamic = 8;
+        write_props->maxDescriptorSetUpdateAfterBindStorageBuffers = 500000;
+        write_props->maxDescriptorSetUpdateAfterBindStorageBuffersDynamic = 4;
+        write_props->maxDescriptorSetUpdateAfterBindSampledImages = 500000;
+        write_props->maxDescriptorSetUpdateAfterBindStorageImages = 500000;
+        write_props->maxDescriptorSetUpdateAfterBindInputAttachments = 500000;
+        write_props->maxTimelineSemaphoreValueDifference = 1024 * 1024 * 1024;
+	}
+
+	const auto* ts_props = lvl_find_in_chain<VkPhysicalDeviceTimelineSemaphoreProperties>(pProperties->pNext);
+	if (ts_props) {
+        VkPhysicalDeviceTimelineSemaphoreProperties* write_props = (VkPhysicalDeviceTimelineSemaphoreProperties*)ts_props;
+		write_props->maxTimelineSemaphoreValueDifference = 1024 * 1024 * 1024;
+	}
 
     const auto *push_descriptor_props = lvl_find_in_chain<VkPhysicalDevicePushDescriptorPropertiesKHR>(pProperties->pNext);
     if (push_descriptor_props) {
